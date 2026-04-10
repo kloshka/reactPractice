@@ -45,10 +45,6 @@
     color: var(--color-gray-4);
   }
 
-  &:not(.is-visible) {
-    opacity: 0;
-    visibility: hidden;
-  }
 }
 
 .todo__list,
