@@ -3,10 +3,16 @@ import SearchTaskForm from "./SearchTaskForm"
 import ToDoInfo from "./ToDoInfo"
 import ToDoList from "./ToDoList"
 
-import {useState} from 'react' //такие функции называют хуками.
+import {useState, useEffect, use} from 'react' //такие функции называют хуками.
 const ToDo = () => {
-    const [tasks, setTasks] = useState(
-        [
+    const [newTaskTitle, setNewTaskTitle] = useState('') // для хранения значения поля ввода новой задачи. Изначально оно пустое.
+
+    const [searchQuery, setSearchQuery] = useState('') // для хранения значения поля ввода поиска задач. Изначально оно пустое.
+
+    const [tasks, setTasks] = useState(() =>{
+        const savedTasks = localStorage.getItem('tasks') // пытаемся получить сохраненные задачи из localStorage    
+        return savedTasks ? JSON.parse(savedTasks) : [
+                    [
             {
                 id: 1,
                 title: 'погладить кота',
@@ -18,13 +24,15 @@ const ToDo = () => {
                 isDone: true,
             }
         ] 
+        ] // если сохраненные задачи есть, парсим их из JSON и возвращаем, иначе возвращаем пустой массив
+    }
     )
 
-    const [newTaskTitle, setNewTaskTitle] = useState('') // для хранения значения поля ввода новой задачи. Изначально оно пустое.
+    const clearSearchQuery = searchQuery.trim().toLowerCase()
+    const filteredTasks = clearSearchQuery.length > 0 // не храним как отдельный state, так как он зависит от searchQuery и tasks. 
 
-
-
-
+        ? tasks.filter(({title}) => title.toLowerCase().includes(clearSearchQuery)) // фильтруем задачи по поисковому запросу, игнорируя регистр
+        : null // если поисковый запрос пустоq
     // если сейчас мы поменяем tasks, то при следующем обновлении интерфейса, tasks снова будет равно этому массиву. И изменения не сохранятся. 
     // Поэтому нам нужно сохранить tasks в состоянии компонента, чтобы при его обновлении сохранять изменения. Для этого мы используем хук useState.
     // при изменении состояния react сам запускает перерисовку компонента
@@ -56,9 +64,6 @@ const ToDo = () => {
 
     }
 
-    const filterTasks = (query) => {
-        console.log('поиск:', query)
-    }
 
     const addTask = () => {
         if (newTaskTitle.trim().length > 0) {
@@ -70,9 +75,16 @@ const ToDo = () => {
             setTasks([...tasks, newTask]) // добавляем новую задачу в массив задач
         }
         setNewTaskTitle('') // очищаем поле ввода после добавления задачи
+        setSearchQuery('') // очищаем поисковый запрос после добавления задачи, чтобы новая задача отображалась в списке задач.
     }
 
+    useEffect(() => {
+        localStorage.setItem('tasks', JSON.stringify(tasks)) // сохраняем tasks в localStorage при каждом изменении tasks
+    }, [tasks]) 
 
+
+    //пустой массив зависимостей означает, что эффект будет выполнен только один раз при первом рендере компонента. 
+    // Это полезно для выполнения инициализационных задач, таких как загрузка данных или настройка подписок.
     return (
     <div className="todo">
       <h1 className="todo__title">To Do List</h1>
@@ -82,7 +94,8 @@ const ToDo = () => {
         setNewTaskTitle={setNewTaskTitle}
       />
       <SearchTaskForm 
-        onSearchInput={filterTasks}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
       />
       <ToDoInfo 
         total={tasks.length}
@@ -91,6 +104,7 @@ const ToDo = () => {
       />  
       <ToDoList 
         tasks={tasks}
+        filteredTasks={filteredTasks}
         onDeleteTaskButtonClick={deleteTask}
         onTaskCompleteChange={toggleTaskComplete}
        />
