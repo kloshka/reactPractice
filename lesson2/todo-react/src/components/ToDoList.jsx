@@ -1,7 +1,10 @@
 import ToDoItem from "./ToDoItem"
 
 const ToDoList = (props) => {
-    const {tasks = []} = props 
+    const {tasks = [],
+      onDeleteTaskButtonClick,
+      onTaskCompleteChange
+    } = props 
     const hasTasks = true
     if (!hasTasks) {
         return (
@@ -17,6 +20,8 @@ const ToDoList = (props) => {
             title={item.title}
             isDone={item.isDone}*/
             key={item.id}
+            onDeleteTaskButtonClick={onDeleteTaskButtonClick}
+            onTaskCompleteChange={onTaskCompleteChange}
             className='todo__item'
             {...item}
           />
