@@ -1,4 +1,7 @@
+import {memo} from "react";
+
 const ToDoInfo = (props) => {
+  console.log('компонент ToDoInfo отрендерился')
     const {
       total,
       done, 
@@ -44,4 +47,4 @@ const ToDoInfo = (props) => {
     )
 }
     
-export default ToDoInfo
+export default memo(ToDoInfo)

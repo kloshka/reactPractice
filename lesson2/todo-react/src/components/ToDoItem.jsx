@@ -1,16 +1,20 @@
+import {memo} from "react"
+
 const ToDoItem = (props) => {
+  console.log('компонент ToDoItem отрендерился')
     const {className = '',
        id,
        title, 
        isDone, 
        bebra,
+       ref,
       isChmo, 
       onDeleteTaskButtonClick,
       onTaskCompleteChange
     } = props
     // или можно было так: const ToDoItem = ({bebra, isChmo}) => {
     return (
-        <li className={`todo__item todo-item ${className}`}>
+        <li className={`todo__item todo-item ${className}`} ref={ref}>
           <input
             className="todo-item__checkbox"
             id={id}
@@ -51,4 +55,4 @@ const ToDoItem = (props) => {
     )
 }
 
-export default ToDoItem
+export default memo(ToDoItem)

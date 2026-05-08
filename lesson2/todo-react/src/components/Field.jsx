@@ -5,7 +5,8 @@ const Field = (props) => {
         label,
         type = 'text',
         onInput, 
-        value
+        value,
+        ref
     } = props
     return (
         <div className={`${className} field`}>
@@ -23,6 +24,7 @@ const Field = (props) => {
             type={type}
             value={value}
             onInput={onInput}
+            ref={ref}
             />
         </div>
     )

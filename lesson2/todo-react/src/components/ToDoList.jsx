@@ -1,9 +1,12 @@
 import ToDoItem from "./ToDoItem"
-
+import {memo} from "react"
 const ToDoList = (props) => {
+  console.log('компонент ToDoList отрендерился')
     const {tasks = [],
       onDeleteTaskButtonClick,
       onTaskCompleteChange,
+      firstIncompleteTaskId,
+      firstIncompleteTaskRef,
       filteredTasks
     } = props 
     const hasTasks = tasks.length > 0
@@ -28,6 +31,7 @@ const ToDoList = (props) => {
             title={item.title}
             isDone={item.isDone}*/
             key={item.id}
+            ref={item.id === firstIncompleteTaskId ? firstIncompleteTaskRef : null} // устанавливаем ref только для первой незавершенной задачи
             onDeleteTaskButtonClick={onDeleteTaskButtonClick}
             onTaskCompleteChange={onTaskCompleteChange}
             className='todo__item'
@@ -39,4 +43,4 @@ const ToDoList = (props) => {
     )
 }
 
-export default ToDoList
+export default memo(ToDoList)

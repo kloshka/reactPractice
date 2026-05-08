@@ -2,11 +2,20 @@ import AddTaskForm from "./AddTaskForm"
 import SearchTaskForm from "./SearchTaskForm"
 import ToDoInfo from "./ToDoInfo"
 import ToDoList from "./ToDoList"
-
-import {useState, useEffect, use} from 'react' //такие функции называют хуками.
+import Button from "./button"
+import {useState, useEffect, useRef, useCallback, useMemo} from 'react' //такие функции называют хуками.
 const ToDo = () => {
+    console.log('компонент ToDo отрендерился')
     const [newTaskTitle, setNewTaskTitle] = useState('') // для хранения значения поля ввода новой задачи. Изначально оно пустое.
 
+    const newTaskInputRef = useRef(null) // для получения доступа к DOM-элементу поля ввода новой задачи. Изначально ссылка указывает на null.
+    // console.log(newTaskInputRef) 
+    // setTimeout(() => {
+    //     console.log(newTaskInputRef) 
+    // }, 1000);
+    useEffect(() => {
+        newTaskInputRef.current.focus() // устанавливаем фокус на поле ввода новой задачи при первом рендере компонента
+    }, [])
     const [searchQuery, setSearchQuery] = useState('') // для хранения значения поля ввода поиска задач. Изначально оно пустое.
 
     const [tasks, setTasks] = useState(() =>{
@@ -27,12 +36,26 @@ const ToDo = () => {
         ] // если сохраненные задачи есть, парсим их из JSON и возвращаем, иначе возвращаем пустой массив
     }
     )
+    const firstIncompleteTaskRef = useRef(null) 
+    const firstIncompleteTaskId = tasks.find((item) => !item.isDone)?.id     // находим первую незавершенную задачу
 
-    const clearSearchQuery = searchQuery.trim().toLowerCase()
-    const filteredTasks = clearSearchQuery.length > 0 // не храним как отдельный state, так как он зависит от searchQuery и tasks. 
+    const renderCount = useRef(0) // для хранения количества рендеров компонента. Изначально 0.
+    useEffect(() => {
+        renderCount.current += 1 // увеличиваем счетчик рендеров при каждом рендере компонента
+        // console.log(`Компонент todo отрендерился ${renderCount.current} раза`) // выводим количество рендеров в консоль
+    }) // без второго аргумента эффект будет выполняться при каждом рендере компонента. 
+    // Если бы мы передали пустой массив в качестве второго аргумента, эффект бы выполнялся только при первом рендере компонента.
+    
+    
+    
+    const filteredTasks = useMemo(() => {
+        const clearSearchQuery = searchQuery.trim().toLowerCase()
+        return clearSearchQuery.length > 0 
+            ? tasks.filter(({title}) => title.toLowerCase().includes(clearSearchQuery)) // фильтруем задачи по поисковому запросу, игнорируя регистр
+            : null 
+    }, [searchQuery, tasks])
 
-        ? tasks.filter(({title}) => title.toLowerCase().includes(clearSearchQuery)) // фильтруем задачи по поисковому запросу, игнорируя регистр
-        : null // если поисковый запрос пустоq
+ // если поисковый запрос пустоq
     // если сейчас мы поменяем tasks, то при следующем обновлении интерфейса, tasks снова будет равно этому массиву. И изменения не сохранятся. 
     // Поэтому нам нужно сохранить tasks в состоянии компонента, чтобы при его обновлении сохранять изменения. Для этого мы используем хук useState.
     // при изменении состояния react сам запускает перерисовку компонента
@@ -43,18 +66,19 @@ const ToDo = () => {
     // хуки можно вызывать только в теле функции компонента (до return) или внутри собственных хуков. 
     // Нельзя вызывать хуки в условных операторах, циклах или вложенных функциях. В jsx нельзя
 
-    const deleteAllTasks = () => {
+    const deleteAllTasks = useCallback(() => {
         const isConfirmed = window.confirm('Вы уверены, что хотите удалить все задачи?')
         if (isConfirmed) {
             setTasks([]) // удаляем все задачи, устанавливая пустой массив в состояние tasks
         }
     }
+    ,[])
 
-    const deleteTask = (taskId) => {
+    const deleteTask = useCallback( (taskId) => {
         setTasks(tasks.filter((item) => item.id !== taskId))
-    }
+    }, [tasks])
 
-    const toggleTaskComplete = (taskId, isDone) => {
+    const toggleTaskComplete = useCallback((taskId, isDone) => {
         setTasks(tasks.map((item) => {
             if (item.id === taskId) {
                 return {...item, isDone} 
@@ -62,29 +86,43 @@ const ToDo = () => {
             return item
         }))
 
-    }
+    }, [tasks])
 
 
-    const addTask = () => {
+    const addTask = useCallback(() => {
+        // const newTaskTitle = newTaskInputRef.current.value // current Обязателен
         if (newTaskTitle.trim().length > 0) {
             const newTask = {
-                id: crypto?.randomUUID() ?? Date.now.toString(), //генерирует уникальный id для новой задачи
+                id: crypto?.randomUUID() ?? Date.now().toString(), //генерирует уникальный id для новой задачи
                 title: newTaskTitle,
                 isDone: false,
             }
-            setTasks([...tasks, newTask]) // добавляем новую задачу в массив задач
+            setTasks((prevTasks) => [...prevTasks, newTask]) // добавляем новую задачу в массив задач
+            setNewTaskTitle('')
+            // newTaskInputRef.current.value = '' // очищаем поле ввода после добавления задачи, используя ссылку
+            setSearchQuery('') // очищаем поисковый запрос после добавления задачи, чтобы новая задача отображалась в списке задач.
+            newTaskInputRef.current.focus() // устанавливаем фокус на поле ввода новой задачи после добавления задачи, используя ссылку
         }
-        setNewTaskTitle('') // очищаем поле ввода после добавления задачи
-        setSearchQuery('') // очищаем поисковый запрос после добавления задачи, чтобы новая задача отображалась в списке задач.
-    }
+    }, [newTaskTitle])
 
     useEffect(() => {
         localStorage.setItem('tasks', JSON.stringify(tasks)) // сохраняем tasks в localStorage при каждом изменении tasks
     }, [tasks]) 
 
+    const doneTasks = useMemo(() => {
+        return tasks.reduce((acc, item) => item.isDone ? acc + 1 : acc, 0)
+    }, [tasks])
 
     //пустой массив зависимостей означает, что эффект будет выполнен только один раз при первом рендере компонента. 
     // Это полезно для выполнения инициализационных задач, таких как загрузка данных или настройка подписок.
+
+
+
+    // const memoizedFn = useCallback(() => {
+    //     console.log('я мемоизированная функция') // useCallback возвращает мемоизированную версию функции, которая сохраняет ссылочную целостность между рендерами, если зависимости не изменились. 
+    // }, []) // пока зависимости не изменятся, ссылка на функцию будет сохраняться, и она не будет пересоздаваться при каждом рендере компонента. 
+    // // Это может быть полезно для оптимизации производительности, особенно при передаче функции в дочерние компоненты, которые зависят от нее и могут избегать ненужных рендеров.
+
     return (
     <div className="todo">
       <h1 className="todo__title">To Do List</h1>
@@ -92,6 +130,7 @@ const ToDo = () => {
         addTask={addTask}
         newTaskTitle={newTaskTitle}
         setNewTaskTitle={setNewTaskTitle}
+        newTaskInputRef={newTaskInputRef}
       />
       <SearchTaskForm 
         searchQuery={searchQuery}
@@ -99,12 +138,19 @@ const ToDo = () => {
       />
       <ToDoInfo 
         total={tasks.length}
-        done={tasks.reduce((acc, item) => item.isDone ? acc + 1 : acc, 0)}
+        done={doneTasks}
         onDeleteAllButtonClick={deleteAllTasks}
       />  
+      <Button onClick={
+        () => firstIncompleteTaskRef.current?.scrollIntoView({behavior: 'smooth'})
+        }>
+        Show first incomplete task
+        </Button>
       <ToDoList 
         tasks={tasks}
         filteredTasks={filteredTasks}
+        firstIncompleteTaskId={firstIncompleteTaskId}
+        firstIncompleteTaskRef={firstIncompleteTaskRef}
         onDeleteTaskButtonClick={deleteTask}
         onTaskCompleteChange={toggleTaskComplete}
        />
