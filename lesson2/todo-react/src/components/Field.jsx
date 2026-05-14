@@ -6,12 +6,13 @@ const Field = (props) => {
         type = 'text',
         onInput, 
         value,
-        ref
+        ref, 
+        error
     } = props
     return (
         <div className={`${className} field`}>
             <label
-            className="field__label"
+            className={`field__label ${error ? "is-invalid" : ""}`}
             htmlFor={id}
             >
             {label}
@@ -26,6 +27,7 @@ const Field = (props) => {
             onInput={onInput}
             ref={ref}
             />
+            {error && <span className="field__error" title={error}>{error}</span>}
         </div>
     )
 }

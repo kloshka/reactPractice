@@ -1,26 +1,29 @@
-import {memo} from "react"
-
+import {memo, useCallback, useContext} from "react"
+import {TasksContext} from "../context/TasksContext"
 const ToDoItem = (props) => {
   console.log('компонент ToDoItem отрендерился')
-    const {className = '',
+    const {
+       className = '',
        id,
        title, 
        isDone, 
-       bebra,
-       ref,
-      isChmo, 
-      onDeleteTaskButtonClick,
-      onTaskCompleteChange
     } = props
+
+    const {
+      firstIncompleteTaskId,
+      firstIncompleteTaskRef,
+      deleteTask,
+      toggleTaskComplete
+    } = useContext(TasksContext) // получаем из контекста массив задач и функцию для их изменения 
     // или можно было так: const ToDoItem = ({bebra, isChmo}) => {
     return (
-        <li className={`todo__item todo-item ${className}`} ref={ref}>
+        <li className={`todo__item todo-item ${className}`} ref={id === firstIncompleteTaskId ? firstIncompleteTaskRef : null} >
           <input
             className="todo-item__checkbox"
             id={id}
             type="checkbox"
             checked={isDone}
-            onChange={(evt) => onTaskCompleteChange(id, evt.target.checked)}
+            onChange={(evt) => toggleTaskComplete(id, evt.target.checked)}
             // readOnly
           />
           <label
@@ -33,7 +36,7 @@ const ToDoItem = (props) => {
             className="todo-item__delete-button"
             aria-label="Delete"
             title="Delete"
-            onClick={() => onDeleteTaskButtonClick(id)}
+            onClick={() => deleteTask(id)}
           >
             <svg
               width="20"

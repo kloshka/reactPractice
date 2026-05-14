@@ -1,14 +1,17 @@
-import {memo} from "react";
+import {memo, useMemo, useContext} from "react";
+import {TasksContext} from "../context/TasksContext"
 
-const ToDoInfo = (props) => {
+const ToDoInfo = () => {
   console.log('компонент ToDoInfo отрендерился')
     const {
-      total,
-      done, 
-      onDeleteAllButtonClick,
-    } = props
+      tasks,
+      deleteAllTasks
+    } = useContext(TasksContext) // получаем из контекста массив задач и функцию для их изменения
+    const total = tasks.length
     const hasTasks = total > 0
-
+    const done = useMemo(() => {
+        return tasks.reduce((acc, item) => item.isDone ? acc + 1 : acc, 0)
+    }, [tasks])
     // const handler = (evt) => {
     //   console.log('клик!', evt, '- привычный объект event обернут в syntheticEvent, чтобы унифицировать evt в разных браузерах',
     //     evt.target
@@ -38,7 +41,7 @@ const ToDoInfo = (props) => {
           <button 
             className="todo__delete-all-button" 
             type="button"
-            onClick={onDeleteAllButtonClick}
+            onClick={deleteAllTasks}
           >
             Delete all
           </button>

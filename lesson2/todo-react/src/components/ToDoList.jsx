@@ -1,14 +1,12 @@
 import ToDoItem from "./ToDoItem"
-import {memo} from "react"
-const ToDoList = (props) => {
+import {memo, useCallback, useContext} from "react"
+import {TasksContext} from "../context/TasksContext"
+const ToDoList = () => {
   console.log('компонент ToDoList отрендерился')
-    const {tasks = [],
-      onDeleteTaskButtonClick,
-      onTaskCompleteChange,
-      firstIncompleteTaskId,
-      firstIncompleteTaskRef,
+    const {
+      tasks,
       filteredTasks
-    } = props 
+    } = useContext(TasksContext) // получаем из контекста массив задач и функцию для их изменения 
     const hasTasks = tasks.length > 0
     const isEmptyFilteredTasks = filteredTasks?.length === 0
     if (!hasTasks) {
@@ -31,9 +29,6 @@ const ToDoList = (props) => {
             title={item.title}
             isDone={item.isDone}*/
             key={item.id}
-            ref={item.id === firstIncompleteTaskId ? firstIncompleteTaskRef : null} // устанавливаем ref только для первой незавершенной задачи
-            onDeleteTaskButtonClick={onDeleteTaskButtonClick}
-            onTaskCompleteChange={onTaskCompleteChange}
             className='todo__item'
             {...item}
           />

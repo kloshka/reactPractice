@@ -1,11 +1,12 @@
 import Field from "./Field"
-
-const SearchTaskForm = (props) => {
+import {useContext} from 'react'
+import {TasksContext} from "../context/TasksContext"
+const SearchTaskForm = () => {
     const {
         onSearchInput, 
         searchQuery,
         setSearchQuery
-    } = props
+    } = useContext(TasksContext) // получаем из контекста массив задач и функцию для их изменения
 
     const onSubmit = (evt) => {
         evt.preventDefault()
