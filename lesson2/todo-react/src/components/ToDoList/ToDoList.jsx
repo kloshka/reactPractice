@@ -1,8 +1,10 @@
-import ToDoItem from "./ToDoItem"
+import ToDoItem from "../ToDoItem/ToDoItem"
 import {memo, useCallback, useContext} from "react"
-import {TasksContext} from "../context/TasksContext"
-const ToDoList = () => {
+import {TasksContext} from "../../context/TasksContext"
+
+const ToDoList = (props) => {
   console.log('компонент ToDoList отрендерился')
+    const {styles} = props
     const {
       tasks,
       filteredTasks
@@ -11,17 +13,17 @@ const ToDoList = () => {
     const isEmptyFilteredTasks = filteredTasks?.length === 0
     if (!hasTasks) {
         return (
-            <div className="todo__empty-message">There are no tasks yet</div>
+            <div className={styles.emptyMessage}>There are no tasks yet</div>
         )
     }
 
     if (hasTasks && isEmptyFilteredTasks) {
         return (
-            <div className="todo__empty-message">No tasks found</div>
+            <div className={styles.emptyMessage}>No tasks found</div>
         )
       }
     return (
-      <ul className="todo__list">
+      <ul className={styles.list}>
         {(filteredTasks ?? tasks).map((item) => (
           <ToDoItem 
             /*className='todo__item'
@@ -29,7 +31,7 @@ const ToDoList = () => {
             title={item.title}
             isDone={item.isDone}*/
             key={item.id}
-            className='todo__item'
+            className={styles.item}
             {...item}
           />
           ))

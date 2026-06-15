@@ -1,5 +1,10 @@
-import {memo, useCallback, useContext} from "react"
-import {TasksContext} from "../context/TasksContext"
+import {memo, useContext} from "react"
+import {TasksContext} from "../../context/TasksContext"
+import RouterLink from "../RouterLink/RouterLink"
+import styles from "./ToDoItem.module.scss"
+// import  useCombinedRefs  from "../../hooks/useCombinedRefs"
+import { useRef } from "react"
+
 const ToDoItem = (props) => {
   console.log('компонент ToDoItem отрендерился')
     const {
@@ -13,13 +18,36 @@ const ToDoItem = (props) => {
       firstIncompleteTaskId,
       firstIncompleteTaskRef,
       deleteTask,
-      toggleTaskComplete
+      toggleTaskComplete,
+      disappearingTaskId,
+      appearingTaskId
     } = useContext(TasksContext) // получаем из контекста массив задач и функцию для их изменения 
+
+    // const animationRef = useRef(null)
+    // const combinedRef = useCombinedRefs(
+    //   animationRef, 
+    //   id === firstIncompleteTaskId ? firstIncompleteTaskRef : null
+    // ) 
+
+    // const handleClick = () => {
+    //   animationRef.current?.classList.add(styles.isDisappearing)
+    //   setTimeout(() => {
+    //     deleteTask(id)
+    //   }, 400)
+    // }
     // или можно было так: const ToDoItem = ({bebra, isChmo}) => {
     return (
-        <li className={`todo__item todo-item ${className}`} ref={id === firstIncompleteTaskId ? firstIncompleteTaskRef : null} >
+        <li 
+          className={` 
+            ${styles.ToDoItem} 
+            ${className} 
+            ${disappearingTaskId === id ? styles.isDisappearing : ''}
+            ${appearingTaskId === id ? styles.isAppearing : ""}
+            ` 
+          } 
+          ref={id === firstIncompleteTaskId ? firstIncompleteTaskRef : null}>
           <input
-            className="todo-item__checkbox"
+            className={styles.checkbox}
             id={id}
             type="checkbox"
             checked={isDone}
@@ -27,13 +55,16 @@ const ToDoItem = (props) => {
             // readOnly
           />
           <label
-            className="todo-item__label"
+            className={`${styles.label} visually-hidden`}
             htmlFor={id}
           >
             {title}
           </label>
+          <RouterLink to={`/tasks/${id}`} aria-label="task detail page">
+            {title}
+          </RouterLink>
           <button
-            className="todo-item__delete-button"
+            className={styles.deleteButton}
             aria-label="Delete"
             title="Delete"
             onClick={() => deleteTask(id)}

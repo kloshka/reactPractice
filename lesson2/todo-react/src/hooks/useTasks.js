@@ -1,11 +1,9 @@
-import {useState, useEffect, useRef, useCallback, useMemo} from 'react'
-import useTasksLocalStorage from './useTasksLocalStorage'
+import {useState, useEffect, useRef, useCallback, useMemo, use} from 'react'
+import tasksAPI from "../api/tasksAPI.js"
 const useTasks = () => {
+    const [disappearingTaskId, setDisappearingTaskId] = useState(null) // для хранения id задачи, которая сейчас исчезает. Изначально null, так как никакая задача не исчезает.
+    const [appearingTaskId, setAppearingTaskId] = useState(null) // для хранения id задачи, которая сейчас появляется. Изначально null, так как никакая задача не появляется.
 
-    const {
-        savedTasks,
-        saveTasks
-    } = useTasksLocalStorage()
 
     const [newTaskTitle, setNewTaskTitle] = useState('') // для хранения значения поля ввода новой задачи. Изначально оно пустое.
 
@@ -19,19 +17,7 @@ const useTasks = () => {
     }, [])
     const [searchQuery, setSearchQuery] = useState('') // для хранения значения поля ввода поиска задач. Изначально оно пустое.
 
-    const [tasks, setTasks] = useState(savedTasks ?? [
-            {
-                id: 1,
-                title: 'погладить кота',
-                isDone: false,
-            },  
-            {
-                id: 2,
-                title: 'погладить собаку',
-                isDone: true,
-            }
-        ] 
-    )
+    const [tasks, setTasks] = useState([])
 
     const renderCount = useRef(0) // для хранения количества рендеров компонента. Изначально 0.
     useEffect(() => {
@@ -63,45 +49,64 @@ const useTasks = () => {
     const deleteAllTasks = useCallback(() => {
         const isConfirmed = window.confirm('Вы уверены, что хотите удалить все задачи?')
         if (isConfirmed) {
-            setTasks([]) // удаляем все задачи, устанавливая пустой массив в состояние tasks
+            tasksAPI.deleteAll(tasks)
+                .then(() => {
+                    setTasks([])
+                }) // после успешного удаления всех задач с сервера, устанавливаем пустой массив в состояние tasks, чтобы обновить интерфейс и отобразить, что все задачи удалены
         }
     }
-    ,[])
+    , [tasks])
 
     const deleteTask = useCallback( (taskId) => {
-        setTasks(tasks.filter((item) => item.id !== taskId))
+        tasksAPI.delete(taskId)
+            .then(() => {
+                setDisappearingTaskId(taskId) // устанавливаем id удаляемой задачи 
+                // в состояние disappearingTaskId, чтобы запустить анимацию исчезновения для этой задачи
+                setTimeout(() => {
+                    setTasks((prevTasks) => prevTasks.filter((item) => item.id !== taskId))
+                    setDisappearingTaskId(null) // сбрасываем id только после удаления из списка
+                }, 400)
+            })
     }, [tasks])
 
     const toggleTaskComplete = useCallback((taskId, isDone) => {
-        setTasks(tasks.map((item) => {
-            if (item.id === taskId) {
-                return {...item, isDone} 
-            }
-            return item
-        }))
 
+        tasksAPI.toggleComplete(taskId, isDone)
+            .then(() => {
+                setTasks(tasks.map((item) => {
+                    if (item.id === taskId) {
+                        return {...item, isDone} 
+                    }
+                    return item
+                }))
+            })
     }, [tasks])
 
 
     const addTask = useCallback((title) => {
         // const newTaskTitle = newTaskInputRef.current.value // current Обязателен
         const newTask = {
-            id: crypto?.randomUUID() ?? Date.now().toString(), //генерирует уникальный id для новой задачи
             title: title,
             isDone: false,
         }
-        setTasks((prevTasks) => [...prevTasks, newTask]) // добавляем новую задачу в массив задач
-        setNewTaskTitle('')
-        // newTaskInputRef.current.value = '' // очищаем поле ввода после добавления задачи, используя ссылку
-        setSearchQuery('') // очищаем поисковый запрос после добавления задачи, чтобы новая задача отображалась в списке задач.
-        newTaskInputRef.current.focus() // устанавливаем фокус на поле ввода новой задачи после добавления задачи, используя ссылку
-        
+        tasksAPI.add(newTask)
+            .then((addedTask) => {
+                setTasks((prevTasks) => [...prevTasks, addedTask]) // добавляем новую задачу в массив задач
+                setNewTaskTitle('')
+                // newTaskInputRef.current.value = '' // очищаем поле ввода после добавления задачи, используя ссылку
+                setSearchQuery('') // очищаем поисковый запрос после добавления задачи, чтобы новая задача отображалась в списке задач.
+                newTaskInputRef.current.focus() // устанавливаем фокус на поле ввода новой задачи после добавления задачи, используя ссылку
+                setAppearingTaskId(addedTask.id) // устанавливаем id новой задачи в состояние appearingTaskId, чтобы запустить анимацию появления
+                setTimeout(() => {
+                    setAppearingTaskId(null) // сбрасываем id новой задачи через 400 мс, чтобы удалить класс анимации появления
+                }, 400)
+            })
     }, [])
 
     useEffect(() => {
-        saveTasks(tasks) // сохраняем задачи в localStorage при каждом изменении tasks
-    }, [tasks]) 
-
+        newTaskInputRef.current.focus()
+    tasksAPI.getAll().then((data) => setTasks(data))
+    }, [])
 
     //пустой массив зависимостей означает, что эффект будет выполнен только один раз при первом рендере компонента. 
     // Это полезно для выполнения инициализационных задач, таких как загрузка данных или настройка подписок.
@@ -123,7 +128,9 @@ const useTasks = () => {
         newTaskTitle,
         setNewTaskTitle,
         searchQuery,
-        setSearchQuery
+        setSearchQuery,
+        disappearingTaskId,
+        appearingTaskId
     }
 }
 

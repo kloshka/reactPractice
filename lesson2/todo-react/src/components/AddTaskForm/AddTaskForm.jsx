@@ -1,8 +1,11 @@
-import Button from "./Button/Button"
-import Field from "./Field/Field"
-import {TasksContext} from "../context/TasksContext"
+import Button from "../Button/Button"
+import Field from "../Field/Field"
+import {TasksContext} from "../../context/TasksContext"
 import {useContext, useState} from 'react' 
-const AddTaskForm = () => {
+const AddTaskForm = (props) => {
+    const {
+        styles
+    } = props
     const {
         addTask, 
         newTaskInputRef,
@@ -28,10 +31,10 @@ const AddTaskForm = () => {
         setError(hasOnlySpaces ? "The task cannot be empty" : "")
     }
     return (
-        <form className="todo__form" onSubmit={onSubmit}>
+        <form className={styles.form} onSubmit={onSubmit}>
             <Field 
               error={error}
-              className="todo__field"
+              className={styles.field}
               label="New task title"
               id="new-task"
               ref={newTaskInputRef}

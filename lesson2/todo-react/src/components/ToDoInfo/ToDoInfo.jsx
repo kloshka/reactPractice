@@ -1,7 +1,8 @@
 import {memo, useMemo, useContext} from "react";
-import {TasksContext} from "../context/TasksContext"
+import {TasksContext} from "../../context/TasksContext"
 
-const ToDoInfo = () => {
+const ToDoInfo = (props) => {
+    const {styles} = props
   console.log('компонент ToDoInfo отрендерился')
     const {
       tasks,
@@ -18,12 +19,12 @@ const ToDoInfo = () => {
     //   )
     // }
     return (
-      <div className="todo__info">
-        <div className="todo__total-tasks">Done {done} from {total}</div>
+      <div className={styles.info}>
+        <div className={styles.totalTasks}>Done {done} from {total}</div>
         {hasTasks && (
           /*
           <button 
-            className="todo__delete-all-button" 
+            className={styles.deleteAllButton} 
             type="button"
             onClick={handler}
             >{/*
@@ -39,7 +40,7 @@ const ToDoInfo = () => {
           </button>            
           */
           <button 
-            className="todo__delete-all-button" 
+            className={styles.deleteAllButton} 
             type="button"
             onClick={deleteAllTasks}
           >

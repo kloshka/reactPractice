@@ -18,7 +18,9 @@ export const TasksProvider = (props) => {
         newTaskTitle,
         setNewTaskTitle,
         searchQuery,
-        setSearchQuery
+        setSearchQuery,        
+        disappearingTaskId,
+        appearingTaskId
     } = useTasks() 
 
     const {
@@ -40,7 +42,9 @@ export const TasksProvider = (props) => {
                 newTaskTitle,
                 setNewTaskTitle,
                 searchQuery,
-                setSearchQuery
+                setSearchQuery,
+                disappearingTaskId,
+                appearingTaskId
             }} // перечисляем все значения, которые хотим передать через контекст. В провайдер оборачивается все дерево компонентов, которым передаем эти значения. Теперь любой компонент внутри этого провайдера может получить доступ к этим значениям, используя хук useContext(TasksContext) и указав нужное значение из объекта, который мы передали в value.
         >
             {children}

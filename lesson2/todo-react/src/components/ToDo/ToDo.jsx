@@ -1,10 +1,13 @@
-import AddTaskForm from "./AddTaskForm"
-import SearchTaskForm from "./SearchTaskForm"
-import ToDoInfo from "./ToDoInfo"
-import ToDoList from "./ToDoList"
-import Button from "./button"
-import {TasksContext} from "../context/TasksContext"
+import AddTaskForm from "../AddTaskForm/AddTaskForm"
+import SearchTaskForm from "../SearchTaskForm/SearchTaskForm"
+import ToDoInfo from "../ToDoInfo/ToDoInfo"
+import ToDoList from "../ToDoList/ToDoList"
+import Button from "../Button/Button"
+import {TasksContext} from "../../context/TasksContext"
 import {useContext} from 'react' //такие функции называют хуками.
+
+import styles from "./ToDo.module.scss"
+
 const ToDo = () => {
     console.log('компонент ToDo отрендерился')
     const {
@@ -12,17 +15,17 @@ const ToDo = () => {
       firstIncompleteTaskId
     } = useContext(TasksContext) // получаем из контекста массив задач и функцию для их изменения
     return (
-    <div className="todo">
-      <h1 className="todo__title">To Do List</h1>
-      <AddTaskForm />
-      <SearchTaskForm />
-      <ToDoInfo />  
+    <div className={styles.todo}>
+      <h1 className={styles.title}>To Do List</h1>
+      <AddTaskForm styles={styles} />
+      <SearchTaskForm  styles={styles}/>
+      <ToDoInfo styles={styles}/>  
       <Button onClick={
         () => firstIncompleteTaskRef.current?.scrollIntoView({behavior: 'smooth'})
         }>
         Show first incomplete task
         </Button>
-      <ToDoList />
+      <ToDoList styles={styles}/>
     </div>
     )
 }

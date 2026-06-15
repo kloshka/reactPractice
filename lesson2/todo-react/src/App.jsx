@@ -1,16 +1,15 @@
-import Greeting from "./components/Greeting"
-import ToDo from "./components/ToDo"
-import { TasksProvider } from "./context/TasksContext"
+import Router from "./Router"
+import TasksPage from "./pages/TasksPage"
+import TaskPage from "./pages/TaskPage"
 const App = () => {
+  const routes = {
+    "/": TasksPage,
+    "/tasks/:id": TaskPage,
+     "*": () => <h1>404 Not Found</h1>
+  }
   return (
     <>
-     <TasksProvider>
-      <ToDo />
-     </TasksProvider>
-      {/*
-        <Greeting name="Вася" />
-        <Greeting name="Саша" />
-      */}
+      <Router routes={routes}/>
     </>
   )
 }
